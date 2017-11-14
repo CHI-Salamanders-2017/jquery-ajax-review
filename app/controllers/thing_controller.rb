@@ -10,10 +10,20 @@ end
 post '/things' do
   @thing = Thing.new(params[:thing])
 
-  if @thing.save
-    redirect '/'
+  if request.xhr?
+    if @thing.save
+      content_type :json
+      @thing.to_json
+    else
+      status 422
+      @thing.errors.full_messages.to_json
+    end
   else
-    @errors = @thing.errors.full_messages
-    erb :"things/new"
+    if @thing.save
+      redirect '/'
+    else
+      @errors = @thing.errors.full_messages
+      erb :"things/new"
+    end
   end
 end
